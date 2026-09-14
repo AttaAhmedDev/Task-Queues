@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Movie Queue</title>
+  <style>
+    :root {
+      --bg: #0f1117;
+      --bg-card: #1a1d27;
+      --line: #2a2f3d;
+      --text: #eef1f6;
+      --muted: #9aa3b5;
+      --accent: #e8b86d;
+      --accent-dark: #c4923a;
+      --pending-bg: #3d2e12;
+      --pending: #f0c36a;
+      --done-bg: #163524;
+      --done: #6ee7a0;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Segoe UI", Tahoma, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(1200px 500px at 10% -10%, #2a1f12 0%, transparent 50%),
+        radial-gradient(900px 400px at 100% 0%, #1a2438 0%, transparent 45%),
+        var(--bg);
+    }
+
+    .wrap {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 40px 20px 64px;
+    }
+
+    .hero {
+      margin-bottom: 28px;
+    }
+
+    .eyebrow {
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      font-size: 12px;
+      color: var(--accent);
+      margin: 0 0 8px;
+    }
+
+    h1 {
+      margin: 0 0 10px;
+      font-size: 36px;
+      font-weight: 700;
+    }
+
+    .sub {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.5;
+      max-width: 520px;
+    }
+
+    .panel {
+      background: var(--bg-card);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.28);
+    }
+
+    form.queue {
+      display: flex;
+      gap: 10px;
+    }
+
+    input[type="text"] {
+      flex: 1;
+      min-width: 0;
+      padding: 12px 14px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: #12151d;
+      color: var(--text);
+      font-size: 16px;
+    }
+
+    input[type="text"]:focus {
+      outline: 2px solid var(--accent);
+      border-color: transparent;
+    }
+
+    button, .btn {
+      border: 0;
+      border-radius: 10px;
+      padding: 12px 16px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    button[type="submit"] {
+      background: var(--accent);
+      color: #1a1206;
+    }
+
+    button[type="submit"]:hover {
+      background: #f3c57a;
+    }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--muted);
+      border: 1px solid var(--line);
+    }
+
+    .btn-ghost:hover {
+      color: var(--text);
+      border-color: var(--muted);
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 14px;
+    }
+
+    .chips button {
+      background: #12151d;
+      color: var(--text);
+      border: 1px solid var(--line);
+      font-weight: 500;
+      padding: 8px 12px;
+      font-size: 13px;
+    }
+
+    .chips button:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .list-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin: 28px 4px 12px;
+    }
+
+    .list-head h2 {
+      margin: 0;
+      font-size: 18px;
+    }
+
+    .count {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .empty {
+      text-align: center;
+      padding: 40px 16px;
+      color: var(--muted);
+    }
+
+    .movie {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px 16px;
+      padding: 16px 18px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .movie:last-child {
+      border-bottom: 0;
+    }
+
+    .title {
+      font-size: 17px;
+      font-weight: 650;
+    }
+
+    .meta {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .badge {
+      align-self: start;
+      justify-self: end;
+      width: fit-content;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .pending { background: var(--pending-bg); color: var(--pending); }
+    .done { background: var(--done-bg); color: var(--done); }
+
+    .rating {
+      grid-column: 1 / -1;
+      font-size: 13px;
+      color: var(--accent);
+    }
+
+    @media (max-width: 600px) {
+      h1 { font-size: 28px; }
+      form.queue { flex-direction: column; }
+      .movie { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="hero">
+      <p class="eyebrow">Celery task queue</p>
+      <h1>Movie queue</h1>
+      <p class="sub">Add a title. A background worker fills in the details from a local list — no API key.</p>
+    </header>
+
+    <section class="panel">
+      <form class="queue" method="post">
+        {% csrf_token %}
+        <input type="text" name="title" placeholder="Search a movie title" required>
+        <button type="submit">Add to queue</button>
+        <a class="btn btn-ghost" href="/">Refresh</a>
+      </form>
+
+      <form class="chips" method="post">
+        {% csrf_token %}
+        <button type="submit" name="title" value="Shutter Island">Shutter Island</button>
+        <button type="submit" name="title" value="Inception">Inception</button>
+        <button type="submit" name="title" value="Predestination">Predestination</button>
+      </form>
+    </section>
+
+    <div class="list-head">
+      <h2>Queued movies</h2>
+      <span class="count">{{ movies|length }} in list</span>
+    </div>
+
+    <section class="panel">
+      {% for movie in movies %}
+      <article class="movie">
+        <div>
+          <div class="title">{{ movie.title }}</div>
+          <div class="meta">
+            {% if movie.status == "done" %}
+              {% if movie.director == "Unknown" %}
+                Not in the local list
+              {% else %}
+                {{ movie.release_year }} · {{ movie.director }} · {{ movie.genre }}
+              {% endif %}
+            {% else %}
+              Looking up details…
+            {% endif %}
+          </div>
+        </div>
+        <span class="badge {{ movie.status }}">{{ movie.status }}</span>
+        {% if movie.status == "done" and movie.rating %}
+        <div class="rating">Rating {{ movie.rating }} / 10</div>
+        {% endif %}
+      </article>
+      {% empty %}
+      <div class="empty">No movies yet. Add a title or pick a suggestion above.</div>
+      {% endfor %}
+    </section>
+  </div>
+</body>
+</html>
